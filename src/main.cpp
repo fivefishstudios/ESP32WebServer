@@ -3,8 +3,85 @@
 #include <WebServer.h>
 #include <SPIFFS.h>
 
+#include <FastLED.h>
+#define FASTLED_INTERNAL
+#define LED_PIN     3
+#define NUM_LEDS    288
+#define BRIGHTNESS  64
+#define LED_TYPE    WS2812B
+#define COLOR_ORDER GRB
+#define NUM_ROWS    18
+#define NUM_COLS    16
+CRGB leds[NUM_LEDS];
+int led_pos=0;
+bool DisplayStatus = LOW;
+
 #include "wifi-credentials.h"
 WebServer server(80);
+
+// convert X,Y position to a linear array, with zigzag wiring
+// position 1,1 is lower-left corner, first row
+// first row wiring is left-to-right
+// second row wiring is right-to-left
+int LEDArrayPosition(int x, int y){
+  // do some bounds checking 
+  if (x>NUM_COLS) x=NUM_COLS;
+  if (x<1) x=1;
+  if (y>NUM_ROWS) y = NUM_ROWS;
+  if (y<1) y=1;
+
+  if (y%2==0){
+    led_pos = ((y) * NUM_COLS) - x;  // even row
+  } else {
+    led_pos = x + ((y-1) * NUM_COLS) -1;  // odd row 
+  }
+  return led_pos;
+}
+
+// draw a single pixel on the matrix screen at specified color
+void DrawPixel(uint8_t x, uint8_t y, CRGB pixelcolor){
+  leds[LEDArrayPosition(x, y)] += pixelcolor;
+}
+
+
+
+// forward declarations ----------------------------
+String SendHTML(bool led1stat);
+// end of forward declarations -------------------- 
+
+
+
+
+void handle_displayon() {
+  DisplayStatus = HIGH;
+  for (int i=1; i<=NUM_LEDS; i++){
+    leds[i] = CHSV(65, 255, 255);
+  }
+  Serial.println("DisplayStatus ON");
+  server.send(200, "text/html", SendHTML(true)); 
+}
+
+void handle_displayoff() {
+  DisplayStatus = LOW;
+  for (int i=1; i<=NUM_LEDS; i++){
+    leds[i] = CRGB::Black;
+  }
+  Serial.println("DisplayStatus OFF");
+  server.send(200, "text/html", SendHTML(false)); 
+}
+
+String SendHTML(bool displaystatus){
+  String DisplayStatusMsg;
+  if (displaystatus) {
+    DisplayStatusMsg = "ON BABY!";
+  } else {
+    DisplayStatusMsg = "OFF!";
+  }
+  String ptr = "<!DOCTYPE html> <html> ";
+  ptr += "LED Matrix Display status is: " + DisplayStatusMsg;
+  ptr += "</html>";
+  return ptr;
+}
 
 void setup()
 {
@@ -40,12 +117,25 @@ void setup()
     file = root.openNextFile(); // read next file entry
   }
   server.serveStatic("/", SPIFFS, "/index.html");  // create default route
+
+
+  // event handlers (for certain URLs) 
+  // for now, we use this to turn on/off our LED Matrix Display
+  server.on("/displayon", handle_displayon);
+  server.on("/displayoff", handle_displayoff);
   
-  server.begin(); // start web server
+  // start web server
+  server.begin(); 
+
+  // init FastLED display
+  delay( 500 ); // power-up safety delay
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(  BRIGHTNESS );    
 
 }
 
 void loop()
 {
   server.handleClient();
+  FastLED.show();
 }
