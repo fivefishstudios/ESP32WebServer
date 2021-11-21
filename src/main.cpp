@@ -54,20 +54,13 @@ String SendHTML(bool led1stat);
 
 void handle_displayon() {
   DisplayStatus = HIGH;
-  for (int i=1; i<=NUM_LEDS; i++){
-    leds[i] = CHSV(65, 255, 255);
-  }
   Serial.println("DisplayStatus ON");
-  server.send(200, "text/html", SendHTML(true)); 
 }
 
 void handle_displayoff() {
   DisplayStatus = LOW;
-  for (int i=1; i<=NUM_LEDS; i++){
-    leds[i] = CRGB::Black;
-  }
   Serial.println("DisplayStatus OFF");
-  server.send(200, "text/html", SendHTML(false)); 
+
 }
 
 String SendHTML(bool displaystatus){
@@ -86,9 +79,16 @@ String SendHTML(bool displaystatus){
 void setup()
 {
   Serial.begin(115200);
+   // init FastLED display
+  delay( 500 ); // power-up safety delay
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness(  BRIGHTNESS );    
+  FastLED.show();
+
   // connect devboard to wifi
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+  // WiFi.begin();
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("WiFi Connect Failed! Rebooting...");delay(1000);
     ESP.restart();
@@ -127,15 +127,21 @@ void setup()
   // start web server
   server.begin(); 
 
-  // init FastLED display
-  delay( 500 ); // power-up safety delay
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness(  BRIGHTNESS );    
-
 }
 
+int hue=0;
 void loop()
 {
   server.handleClient();
+  if (DisplayStatus)
+  {
+    hue++;
+    fill_rainbow( leds, NUM_LEDS, hue, 1);
+  } else {
+    for (int i=0; i<=NUM_LEDS; i++){
+      leds[i] = CRGB::Black;
+    }
+  }
+  delay(5);
   FastLED.show();
 }
