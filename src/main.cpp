@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <WebServer.h>
+// #include <WebServer.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
 #include <FastLED.h>
@@ -17,7 +19,11 @@ int led_pos=0;
 bool DisplayStatus = LOW;
 
 #include "wifi-credentials.h"
-WebServer server(80);
+// WebServer server(80);
+
+AsyncWebServer server(80);
+// AsyncWebSocket ws("/ws");
+AsyncWebSocket ws("/");
 
 // convert X,Y position to a linear array, with zigzag wiring
 // position 1,1 is lower-left corner, first row
@@ -76,6 +82,75 @@ String SendHTML(bool displaystatus){
   return ptr;
 }
 
+void notifyClients(uint8_t *data) {
+  ws.textAll("Hello from ESP32 WebSocket Server... here's your data back -->");
+  // ws.textAll(data);
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    data[len] = 0;
+    notifyClients(data);   
+  }
+}
+
+void LightUpDisplay(void *arg, uint8_t *data, size_t len){
+  // Serial.printf("\nReceived Data: %s ", data);
+  
+  // echo data back to web browser client
+  ws.textAll((char *)data);     // ws.printfAll("Echo data back is %s ", data);
+
+  // light up LEDs
+  int led_ndx = 0;
+  for (;;)
+  {
+    // data will be in format: FF0000 00FF00 0000FF FF0000 00FF00 0000FF
+    // must be separated by spaces
+    // convert each hex group digit into CRGB data format (long)
+      char * data_end;
+      const CRGB rgb = (uint32_t) strtol((const char *) data, &data_end, 16);
+      
+      if ((char *) data == data_end) {
+          break;
+      }
+
+      // Serial.printf("\nrgb value for LED# %i is: %u", led_ndx,  rgb);
+      leds[led_ndx] = rgb;    // assign color to led 
+      led_ndx++;              // go to next led
+      
+      data = (uint8_t * ) data_end;   // this is needed to traverse the list of hex values (separated by space)
+  }
+  // FastLED.show();  
+}
+
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+             void *arg, uint8_t *data, size_t len) {
+   // code here 
+   switch (type) {
+    case WS_EVT_CONNECT:
+      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      break;
+    case WS_EVT_DISCONNECT:
+      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      break;
+    case WS_EVT_DATA:
+      data[len]=0;
+      // Serial.printf("\nData received by websocket server is: %s ", data);
+      // handleWebSocketMessage(arg, data, len);
+      LightUpDisplay(arg, data, len);
+      break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+      break;
+  }
+}
+
+void initWebSocket() {
+  ws.onEvent(onEvent);
+  server.addHandler(&ws);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -116,14 +191,18 @@ void setup()
     server.serveStatic(file.name(), SPIFFS, file.name());
     file = root.openNextFile(); // read next file entry
   }
-  server.serveStatic("/", SPIFFS, "/index.html");  // create default route
+  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");;  // create default route
 
 
   // event handlers (for certain URLs) 
   // for now, we use this to turn on/off our LED Matrix Display
-  server.on("/displayon", handle_displayon);
-  server.on("/displayoff", handle_displayoff);
+  // server.on("/displayon", handle_displayon);
+  // server.on("/displayoff", handle_displayoff);
   
+  
+  // start web sockets
+  initWebSocket();
+
   // start web server
   server.begin(); 
 
@@ -132,16 +211,18 @@ void setup()
 int hue=0;
 void loop()
 {
-  server.handleClient();
-  if (DisplayStatus)
-  {
-    hue++;
-    fill_rainbow( leds, NUM_LEDS, hue, 1);
-  } else {
-    for (int i=0; i<=NUM_LEDS; i++){
-      leds[i] = CRGB::Black;
-    }
-  }
+  ws.cleanupClients();
+  
+  // if (DisplayStatus)
+  // {
+  //   hue++;
+  //   fill_rainbow( leds, NUM_LEDS, hue, 1);
+  // } else {
+  //   for (int i=0; i<=NUM_LEDS; i++){
+  //     leds[i] = CRGB::Black;
+  //   }
+  // }
+
   delay(5);
   FastLED.show();
 }

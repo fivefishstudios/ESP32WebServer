@@ -1,33 +1,26 @@
+<!doctype html>
 <html>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"
- crossorigin="anonymous"></script>
-<script>
 
-  $(document).ready(function (e) {
-    // your code here
-    $("#on").click(function (event) {
-      $("#result").load("http://192.168.0.31/displayon", function(){
-      });
-    });
-
-    $("#off").click(function (event) {
-      $("#result").load("http://192.168.0.31/displayoff", function(){
-      });
-    });
-  });
-</script>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script src="websocket.js"></script>
+</head>
 
 <body style="padding:3em">
-<center><h1>Switch On - Switch Off</h1>
-  <h2>ESP32 Demo</h2>
-<div class="container-fluid">
+  <center>
+    <h2>WebSockets</h2>
+    <h3>ESP32 Demo</h3>
+    <div class="container-fluid">
 
-  <button type="button" class="btn btn-primary" style="margin-top:2em" id="on">Turn ON Rainbow</button>
-  <button type="button" class="btn btn-secondary" style="margin-top:2em" id="off">Turn OFF Rainbow</button>
-  <div id="result"></div>
-</div>
-</center>
+      <button type="button" class="btn btn-primary" style="margin-top:2em" id="button-on">Send Data Packet via WebSocket</button>
+      <br>
+      <button type="button" class="btn btn-secondary" style="margin-top:2em" id="button-off">Send Control Cmd via WS</button>
+      <div id="pagestatus" style="margin-top:5em"></div>
+    </div>
+  </center>
 </body>
+
 </html>
