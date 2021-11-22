@@ -11,3 +11,6 @@
 /displayon  
 /displayoff  
 
+- use websockets to send individual RGB data for each LED in the Display Matrix to the ESP32. MCU then updates
+the display matrix via FastLED()
+
