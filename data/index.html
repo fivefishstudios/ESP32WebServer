@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
   <script src="websocket.js"></script>
 </head>
 
@@ -15,9 +16,57 @@
     <h3>ESP32 Demo</h3>
     <div class="container-fluid">
 
-      <button type="button" class="btn btn-primary" style="margin-top:2em" id="button-on">Send Data Packet via WebSocket</button>
+      <button type="button" class="btn btn-primary btn-lg" style="margin-top:2em" id="button-on">Send Data Packet</button>
+
       <br>
-      <button type="button" class="btn btn-secondary" style="margin-top:2em" id="button-off">Send Control Cmd via WS</button>
+      <button type="button" class="btn btn-secondary btn-lg" style="margin-top:2em" id="button-off">Turn OFF Display</button>
+      
+      <br>
+      <div id="picker" style="margin-top:4em;margin-bottom: 10px"></div>
+      <br>
+      X pos: <select name="x" id="x">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
+        <option>11</option>
+        <option>12</option>
+        <option>13</option>
+        <option>14</option>
+        <option>15</option>
+        <option>16</option>
+      </select>
+      ,
+      Y pos: <select name="y" id="y">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
+        <option>11</option>
+        <option>12</option>
+        <option>13</option>
+        <option>14</option>
+        <option>15</option>
+        <option>16</option>
+        <option>17</option>
+        <option>18</option>
+      </select>
+      <br>
+      <button type="button" class="btn btn-danger btn-lg" style="margin-top:10px;margin-bottom:10px;" id="button-pixel">Toggle Pixel @ X, Y</button>
+
+      
       <div id="pagestatus" style="margin-top:5em"></div>
     </div>
   </center>

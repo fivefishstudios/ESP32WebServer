@@ -124,6 +124,36 @@ void LightUpDisplay(void *arg, uint8_t *data, size_t len){
   // FastLED.show();  
 }
 
+
+void LightUpSinglePixel(void *arg, uint8_t *data, size_t len){
+  // message format: Pxx yy rrggbb 
+  // echo data back to web browser client
+  ws.textAll((char *)data);     // ws.printfAll("Echo data back is %s ", data);
+  
+  Serial.printf("\nHex data is: %u", data);
+
+  // light up single LED, parse the x, y and rrggbb values
+  // data will be in format: Pxx yy rrggbb
+  uint8_t ledx;
+  uint8_t ledy;
+  char * data_end;
+
+  // we start at data[1] because data]0] == 'P'
+  ledx = (uint8_t) strtol((const char *) &data[1], &data_end, 10);  // decimal for X pos
+  Serial.printf("\nLedX is: %i", ledx);
+  data = (uint8_t * ) data_end;
+
+  ledy = (uint8_t) strtol((const char *) &data[1], &data_end, 10);  // decimal for Y pos
+  Serial.printf("\nLedY is: %i", ledy);
+  data = (uint8_t * ) data_end;
+
+  const CRGB rgb = (uint32_t) strtol((const char *) &data[1], &data_end, 16);   // hex for color value
+  
+  Serial.printf("\nrgb value for LED at pos %i,%i is: %u", ledx, ledy, rgb);
+  
+  leds[LEDArrayPosition(ledx, ledy)] = rgb;
+}
+
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
              void *arg, uint8_t *data, size_t len) {
    // code here 
@@ -135,9 +165,13 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
       break;
     case WS_EVT_DATA:
-      data[len]=0;
-      // Serial.printf("\nData received by websocket server is: %s ", data);
+      data[len]=0; //???? 
+      Serial.printf("\nData received by websocket server is: %s ", data);
       // handleWebSocketMessage(arg, data, len);
+      // check for specific messages
+      if (data[0]=='P'){   // P == light a single pixel
+        LightUpSinglePixel(arg, data, len);
+      } // end if 
       LightUpDisplay(arg, data, len);
       break;
     case WS_EVT_PONG:

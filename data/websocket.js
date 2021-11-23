@@ -3,7 +3,24 @@
 $(document).ready(function (e) {
     var buttonOn = document.getElementById("button-on");
     var buttonOff = document.getElementById("button-off");
+    var buttonSingle = document.getElementById("button-pixel");
+    var selectX = document.getElementById("x");
+    var selectY = document.getElementById("y");
     var pagestatus = document.getElementById("pagestatus");
+
+    // start color picker
+    var colorPicker = new iro.ColorPicker("#picker", {
+        // Set the size of the color picker
+        width: 240,
+        // Set the initial color to pure red
+        color: "#f00"
+    });
+
+    // update color of button if color change
+    colorPicker.on('color:change', function(color) {
+        // log the current color as a HEX string
+        buttonSingle.style.background=color.hexString;
+    });
 
     buttonOn.onclick = function () {
         console.log("ON Button clicked! Sending data to WS");
@@ -20,21 +37,40 @@ $(document).ready(function (e) {
             // console.log("Data sent to WS --> " + ledData);
             socket.send(ledData);
         }
-    }
+    } // buttonOn 
     
 
     buttonOff.onclick = function () {
         console.log("OFF Button clicked!");
-        ledData = "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 "; 
-        ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-        ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-        ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-        ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-        ledData = ledData.replaceAll(/#/g,'');  // Cleanup Data -- remove hash
-        ledData = ledData.replaceAll(/,/g,''); // remove commas     
-        // console.log("Data sent to WS --> " + ledData);
-        socket.send(ledData);
-    }
+        if (socket.readyState == WebSocket.OPEN) {
+            ledData = "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 "; 
+            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
+            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
+            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
+            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
+            ledData = ledData.replaceAll(/#/g,'');  // Cleanup Data -- remove hash
+            ledData = ledData.replaceAll(/,/g,''); // remove commas     
+            // console.log("Data sent to WS --> " + ledData);
+            socket.send(ledData);
+        }
+    } // buttonOff
+
+
+    buttonSingle.onclick = function () {
+        console.log("Turn ON single pixel Button clicked!");
+        // Message Format: Pxx yy rrggbb
+        if (socket.readyState == WebSocket.OPEN) {
+            // get X and Y values from select form
+            ledx = selectX.value;
+            ledy = selectY.value;
+            var hexcolor = colorPicker.color.hexString;
+            ledData = 'P' + ledx.toString(16) + ' ' + ledy.toString(16) + ' ' + hexcolor ; 
+            ledData = ledData.replaceAll(/#/g,'');  // Cleanup Data -- remove hash
+            ledData = ledData.replaceAll(/,/g,''); // remove commas     
+            console.log("Data sent to WS --> " + ledData);
+            socket.send(ledData);
+        }
+    } // buttonSingle 
 
     pagestatus.innerHTML = ""; // clear initially
 });
