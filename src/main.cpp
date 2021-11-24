@@ -18,6 +18,9 @@ CRGB leds[NUM_LEDS];
 int led_pos=0;
 bool DisplayStatus = LOW;
 
+// this define does not seem to work
+#define WEBSOCKETS_MAX_DATA_SIZE 8192
+
 #include "wifi-credentials.h"
 // WebServer server(80);
 
@@ -97,6 +100,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
 void LightUpDisplay(void *arg, uint8_t *data, size_t len){
   // Serial.printf("\nReceived Data: %s ", data);
+
+  // home much memory we have?
+  Serial.printf("\nESP memory free: %u", ESP.getFreeHeap());
   
   // echo data back to web browser client
   ws.textAll((char *)data);     // ws.printfAll("Echo data back is %s ", data);
