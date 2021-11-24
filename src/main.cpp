@@ -173,10 +173,16 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     case WS_EVT_DATA:
       data[len]=0; //???? 
       Serial.printf("\nData received by websocket server is: %s ", data);
-      // handleWebSocketMessage(arg, data, len);
       // check for specific messages
+      if (data[0]=='C'){   // C == clear off all LEDs
+        for (int i=0; i<NUM_LEDS; i++){
+          leds[i] = CRGB::Black;
+        }
+        break;
+      } // end if 
       if (data[0]=='P'){   // P == light a single pixel
         LightUpSinglePixel(arg, data, len);
+        break;
       } // end if 
       LightUpDisplay(arg, data, len);
       break;

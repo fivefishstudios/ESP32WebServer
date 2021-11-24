@@ -1,19 +1,44 @@
 
 // don't execute JS until html page is completely loaded
 $(document).ready(function (e) {
-    var buttonOn = document.getElementById("button-on");
     var buttonOff = document.getElementById("button-off");
     var buttonSingle = document.getElementById("button-pixel");
     var selectX = document.getElementById("x");
     var selectY = document.getElementById("y");
     var pagestatus = document.getElementById("pagestatus");
+    var mytable = document.querySelector("#mytable");
+
+    // add event handler to table, each table cell is unique due to id 
+    const cells = mytable.addEventListener("mouseover", function (event) {
+        var td = event.target;
+        while (td !== this && !td.matches("td")) {
+            td = td.parentNode;
+        }
+        if (td === this) {
+            // console.log("No table cell found");
+            // do nothing, not a table cell
+        } else {
+            id = td.id;     // get id of this table cell 
+            id_split = id.split(',');   // split id to x, y coords
+            ledx = parseInt(id_split[0]);
+            ledy = parseInt(id_split[1]);
+            var hexcolor = colorPicker.color.hexString;
+            ledData = 'P' + ledx.toString(10) + ' ' + ledy.toString(10) + ' ' + hexcolor;
+            ledData = ledData.replaceAll(/#/g, '');  // Cleanup Data -- remove hash
+            ledData = ledData.replaceAll(/,/g, ''); // remove commas     
+            // console.log("Data sent to WS --> " + ledData);
+            td.style.backgroundColor = hexcolor;
+            socket.send(ledData);
+        }
+    });
+
+
+
 
     // start color picker
     var colorPicker = new iro.ColorPicker("#picker", {
-        // Set the size of the color picker
-        width: 240,
-        // Set the initial color to pure red
-        color: "#f00"
+        width: 200,     // Set the size of the color picker
+        color: "#f00"   // Set the initial color to pure red
     });
 
     // update color of button if color change
@@ -22,84 +47,15 @@ $(document).ready(function (e) {
         buttonSingle.style.background=color.hexString;
     });
 
-    buttonOn.onclick = function () {
-        console.log("ON Button clicked! Sending data to WS");
-        if (socket.readyState == WebSocket.OPEN) {
-            // format of LED Matrix data to send to server. # and commas are optional.
-            ledData =  "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";  
-            
-            // circular buffer overflow? wraparound?
-            ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF ";       
-            // ledData += "#FF0000, #00FF00, #0000FF, #FF0000, #00FF00, #0000FF, #123456, #098765 #335577 #998877, #AABBCC 834671 DF45FF 888888 229900 FF00FF "; 
-               
-            
-            console.log("Original Data --> " + ledData);
-            ledData = ledData.replaceAll(/#/g,'');  // Cleanup Data -- remove hash
-            ledData = ledData.replaceAll(/,/g,''); // remove commas
-            
-            console.log("Data sent to WS --> " + ledData);
-
-            socket.send(ledData);
-        }
-    } // buttonOn 
-    
+      
 
     buttonOff.onclick = function () {
-        console.log("OFF Button clicked!");
         if (socket.readyState == WebSocket.OPEN) {
-            ledData = "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 "; 
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData += "#000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 #000000 ";  
-            ledData = ledData.replaceAll(/#/g,'');  // Cleanup Data -- remove hash
-            ledData = ledData.replaceAll(/,/g,''); // remove commas     
-            // console.log("Data sent to WS --> " + ledData);
-            socket.send(ledData);
+            socket.send("C");       // 'C' websocket message is CLEAR, turn off ALL LEDs in led array
+            // change all cells in table to gray color
+            tablecells = document.querySelectorAll("#mytable td").forEach(function(cell){
+                cell.style.backgroundColor = "#000";
+            });
         }
     } // buttonOff
 
@@ -118,7 +74,11 @@ $(document).ready(function (e) {
             console.log("Data sent to WS --> " + ledData);
             socket.send(ledData);
         }
+        // change bkgd color of table cell based on x,y position (ID)
+        cellid = ledx +","+ledy;
+        cell = document.getElementById(cellid).style.backgroundColor = hexcolor;
     } // buttonSingle 
+
 
     pagestatus.innerHTML = ""; // clear initially
 });
@@ -189,3 +149,4 @@ if (window.WebSocket) {
     console.log("WebSockets not supported by this browser");
     alert("Your Browser do not support WebSockets!");
 }
+
