@@ -8,8 +8,7 @@ $(document).ready(function (e) {
     var pagestatus = document.getElementById("pagestatus");
     var mytable = document.querySelector("#mytable");
 
-    // add event handler to table, each table cell is unique due to id 
-    const cells = mytable.addEventListener("mouseover", function (event) {
+    function doColorCell(){
         var td = event.target;
         while (td !== this && !td.matches("td")) {
             td = td.parentNode;
@@ -30,6 +29,21 @@ $(document).ready(function (e) {
             td.style.backgroundColor = hexcolor;
             socket.send(ledData);
         }
+    }
+
+    // add event handler to table, each table cell is unique due to id 
+    // mouse is clicked and moving over cells, color cells.
+    const cells = mytable.addEventListener("mouseover", function (event) {
+        // only do somehting if left mouse button is pressed down and dragging
+        if (event.buttons == 1) {
+            doColorCell();
+        }
+    });
+
+    // add event handler to table, each table cell is unique due to id 
+    // mouse is clicked. color current cell
+    const clickcell = mytable.addEventListener("mousedown", function (event) {
+        doColorCell();  
     });
 
 
