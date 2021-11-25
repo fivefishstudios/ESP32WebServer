@@ -9,7 +9,7 @@
 #define FASTLED_INTERNAL
 #define LED_PIN     3
 #define NUM_LEDS    288
-#define BRIGHTNESS  64
+#define BRIGHTNESS  48
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
 #define NUM_ROWS    18
