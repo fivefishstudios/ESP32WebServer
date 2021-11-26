@@ -8,7 +8,7 @@ $(document).ready(function (e) {
     var pagestatus = document.getElementById("pagestatus");
     var mytable = document.querySelector("#mytable");
 
-    function doColorCell(){
+    function doColorCell(hexcolor){
         var td = event.target;
         while (td !== this && !td.matches("td")) {
             td = td.parentNode;
@@ -21,7 +21,7 @@ $(document).ready(function (e) {
             id_split = id.split(',');   // split id to x, y coords
             ledx = parseInt(id_split[0]);
             ledy = parseInt(id_split[1]);
-            var hexcolor = colorPicker.color.hexString;
+            // var hexcolor = colorPicker.color.hexString;
             ledData = 'P' + ledx.toString(10) + ' ' + ledy.toString(10) + ' ' + hexcolor;
             ledData = ledData.replaceAll(/#/g, '');  // Cleanup Data -- remove hash
             ledData = ledData.replaceAll(/,/g, ''); // remove commas     
@@ -29,25 +29,38 @@ $(document).ready(function (e) {
             td.style.backgroundColor = hexcolor;
             socket.send(ledData);
         }
-    }
+    };
 
     // add event handler to table, each table cell is unique due to id 
-    // mouse is clicked and moving over cells, color cells.
+    // left mouse button is clicked and moving over cells, color cells.
     const cells = mytable.addEventListener("mouseover", function (event) {
         // only do somehting if left mouse button is pressed down and dragging
         if (event.buttons == 1) {
-            doColorCell();
+            var hexcolor = colorPicker.color.hexString;
+            doColorCell(hexcolor);
         }
     });
 
     // add event handler to table, each table cell is unique due to id 
-    // mouse is clicked. color current cell
+    // left mouse button is clicked. color current cell
     const clickcell = mytable.addEventListener("mousedown", function (event) {
-        doColorCell();  
+        if (event.buttons == 1) {
+            var hexcolor = colorPicker.color.hexString;
+            doColorCell(hexcolor);
+        }
     });
 
 
+    // disable right-click  context menu for table
+    mytable.addEventListener("contextmenu", e => e.preventDefault());
 
+    // right mouse button is clicked. clear current cell to black
+    const rightClickCell = mytable.addEventListener("mousedown", function (event) {
+        if (event.buttons == 2) {
+            var hexcolor = '#000000'
+            doColorCell(hexcolor);
+        }
+    });
 
     // start color picker
     var colorPicker = new iro.ColorPicker("#picker", {
